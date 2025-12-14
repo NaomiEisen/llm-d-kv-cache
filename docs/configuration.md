@@ -308,8 +308,13 @@ Configures the available device backends which store the KV Cache blocks. This w
 ### KV-Event Pool Configuration (`Config`)
 
 Configures the ZMQ event processing pool for handling KV cache events. The pool supports two modes:
+<<<<<<< HEAD
 1. **Static Endpoint Mode**: Connects to a single ZMQ endpoint
 2. **Auto-Discovery Mode** (default): Automatically discovers and subscribes to per-pod ZMQ endpoints
+=======
+1. **Global Socket Mode**: Connects to a single ZMQ endpoint
+2. **Pod Reconciler Mode** (default): Automatically discovers and subscribes to per-pod ZMQ endpoints
+>>>>>>> ae3cb76 (implement pod discovery for KVEvents subscription mgmt + blocking module rename artifacts)
 
 ```json
 {

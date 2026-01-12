@@ -464,6 +464,36 @@ install-hooks: ## Install git hooks
 
 .PHONY: download-zmq
 download-zmq: ## Install ZMQ dependencies based on OS/ARCH
+    ## Install pkg-config before attempting to use it
+	@echo "Checking for pkg-config ..."
+	@if command -v pkg-config >/dev/null 2>&1; then \
+	  echo "✅ pkg-config is already installed."; \
+	else \
+	  echo "pkg-config not found. Installing..."; \
+	  if [ "$(TARGETOS)" = "linux" ]; then \
+	    if [ -x "$$(command -v apt)" ]; then \
+	      apt update && apt install -y pkg-config; \
+	    elif [ -x "$$(command -v dnf)" ]; then \
+	      dnf install -y pkg-config; \
+	    else \
+	      echo "Unsupported Linux package manager. Install pkg-config manually."; \
+	      exit 1; \
+	    fi; \
+	  elif [ "$(TARGETOS)" = "darwin" ]; then \
+	    if [ -x "$$(command -v brew)" ]; then \
+	      brew install pkg-config; \
+	    else \
+	      echo "Homebrew is not installed and is required to install pkg-config. Install it from https://brew.sh/"; \
+	      exit 1; \
+	    fi; \
+	  else \
+	    echo "Unsupported OS: $(TARGETOS). Install pkg-config manually."; \
+	    exit 1; \
+	  fi; \
+	  echo "✅ pkg-config installed."; \
+	fi
+
+	## Install ZMQ
 	@echo "Checking if ZMQ is already installed..."
 	@if pkg-config --exists libzmq; then \
 	  echo "✅ ZMQ is already installed."; \

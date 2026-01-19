@@ -462,7 +462,7 @@ sequenceDiagram
     activate Event
     Note over Event: Self-processing:<br/>1. Parse hashes<br/>2. Create keys<br/>3. Update index
     Event->>Adapter: ParseHash(rawHash)
-    Adapter-->>Event: uint64
+    Adapter-->>Event: for example- the uint64
     Event->>Index: Add/Evict/Clear
     deactivate Event
     deactivate Pool

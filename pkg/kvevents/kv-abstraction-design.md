@@ -229,6 +229,45 @@ The goal is to seperate the processing logic into a deticated units (objects/str
 - **Decode:** The dependency on a specific event serilazation (msgpack, JSON, etc.) will be encapsulated within 'Decoder' interface.
 - **Message Struct:** The dependency on a specific event struct based on LLM engine (vLLM, SGLang, etc.) will be encapsulated within 'EngineAdapter' interface.
 
+### Simplified Overvirew
+A simplified overview of the new components, just to get the feeling.
+The relationship is:
+
+Subscriber {
+    EngineAdapter {
+       Transport
+        Decoder 
+    }
+}
+
+```mermaid
+graph TB
+    SM[SubscriberManager]
+    
+    SM --> S1[Subscriber 1<br/>pod: vllm-pod-1]
+    SM --> S2[Subscriber 2<br/>pod: sglang-pod-1]
+    
+    S1 --> A1[VLLMAdapter]
+    A1 --> T1[ZMQTransport]
+    A1 --> D1[MsgpackDecoder]
+    
+    S2 --> A2[SGLangAdapter]
+    A2 --> T2[HTTPTransport]
+    A2 --> D2[JSONDecoder]
+    
+    SM --> Pool
+    S1 --> Pool
+    S2 --> Pool
+
+    
+    style SM fill:#b3e0ff,color:#000
+    style S1 fill:#ffe4b3,color:#000
+    style S2 fill:#ffe4b3,color:#000
+    style A1 fill:#c8f0c8,color:#000
+    style A2 fill:#c8f0c8,color:#000
+```
+
+***Note: Theoretically this scenario is possible but for now it is better to separate different engines with different pools (so, SubscriberManager). This is just to emphasize the flexibility with this design***
 
 ### Object Diagram
 ```mermaid
@@ -548,43 +587,12 @@ pkg/kvevents/
 └── subscriber_manager.go   # SubscriberManager
 ```
 ---
+
 ##  Notes
 - Should verify that the "self processing events" is a managebale feature. From looking at the pool digestEvent methods looks like it should not be a porblem as long as we handle the "getHash" func.
 - Maybe we don't need the "Message" struct, EventBatch can contain more data besides an array of Events.
 - Look what is the specific structure of the SGLang events and summerize here. (overall, looks similar, just the actual Event objects have differend fields)
 - Go over the flow of creating the subsribers.
-
----
-
-## Summary
-
-A view of the interaction between subscribers and the new structures. Theoretically this scenario is possible but for now it is better to seperate different engines with different pools (so, SubscriberManager)
-```mermaid
-graph TB
-    SM[SubscriberManager]
-    
-    SM --> S1[Subscriber 1<br/>pod: vllm-pod-1]
-    SM --> S2[Subscriber 2<br/>pod: sglang-pod-1]
-    
-    S1 --> A1[VLLMAdapter]
-    A1 --> T1[ZMQTransport]
-    A1 --> D1[MsgpackDecoder]
-    
-    S2 --> A2[SGLangAdapter]
-    A2 --> T2[HTTPTransport]
-    A2 --> D2[JSONDecoder]
-    
-    SM --> Pool
-    S1 --> Pool
-    S2 --> Pool
-
-    
-    style SM fill:#b3e0ff,color:#000
-    style S1 fill:#ffe4b3,color:#000
-    style S2 fill:#ffe4b3,color:#000
-    style A1 fill:#c8f0c8,color:#000
-    style A2 fill:#c8f0c8,color:#000
-```
 
 
 Bind/Connect remains subscriber's responsibility.

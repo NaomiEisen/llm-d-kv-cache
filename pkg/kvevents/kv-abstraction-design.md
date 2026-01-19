@@ -575,12 +575,12 @@ pkg/kvevents/
 │   ├──── vllm.go             # VLLMAdapter
 │   └──── sglang.go           # EXAMPLE: SGLangAdapter
 │
-├── events/
-│   ├── event.go            # GenericEvent interface
-│   ├── batch.go            # GenericEventBatch
-│   ├──── block_stored.go       # BlockStoredEvent
-│   ├──── block_removed.go      # BlockRemovedEvent
-│   └──── all_blocks_cleared.go # AllBlocksClearedEvent
+├── events.go                  
+│   ├── Event                 # GenericEvent interface
+│   └── EventBatch            # GenericEventBatch
+│       ├── BlockStored            
+│       ├── BlockRemoved           
+│       └── AllBlocksCleared       
 │
 ├── pool.go                 # Pool implementation
 ├── subscriber.go           # Subscriber implementation

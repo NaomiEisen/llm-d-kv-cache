@@ -230,15 +230,17 @@ The goal is to seperate the processing logic into a deticated units (objects/str
 - **Message Struct:** The dependency on a specific event struct based on LLM engine (vLLM, SGLang, etc.) will be encapsulated within 'EngineAdapter' interface.
 
 ### Simplified Overvirew
-A simplified overview of the new components, just to get the feeling.
+A simplified overview of the new components, just to get the feeling (This is just an example, I know that SGLang does use HTTP and JSON).
 The relationship is:
 
+```
 Subscriber {
     EngineAdapter {
        Transport
         Decoder 
     }
 }
+```
 
 ```mermaid
 graph TB
@@ -270,6 +272,9 @@ graph TB
 ***Note: Theoretically this scenario is possible but for now it is better to separate different engines with different pools (so, SubscriberManager). This is just to emphasize the flexibility with this design***
 
 ### Object Diagram
+
+A full object diagram of the design.
+
 ```mermaid
 classDiagram
     class Transport {

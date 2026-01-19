@@ -190,13 +190,10 @@ sequenceDiagram
     
     activate Pool
     Pool->>Pool: Hash PodIdentifier → Select queue
-    Note over Pool: FNV-1a hash for sharding
     
     Pool->>Pool: Unmarshal msgpack → EventBatch
-    Note over Pool: Decode msgpack array
     
     Pool->>Pool: UnmarshalKVEvent() for each event
-    Note over Pool: Parse tagged union:<br/>["BlockStored", ...]
     
     Pool->>Pool: digestEvents()
     Note over Pool: Switch on event type

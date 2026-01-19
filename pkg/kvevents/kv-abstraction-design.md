@@ -536,7 +536,7 @@ From subsrciber side:
         │ - Connect/Bind        │   │ - Unmarshal bytes     │
         │ - Receive bytes       │   │   To structs          │
         └───────────────────────┘   └───────────────────────┘
-                              ↓ returns GenericEventBatch
+                              ↓ EngineAdapter returns GenericEventBatch
 ┌─────────────────────────────────────────────────────────────────────┐
 │    GenericEvent (interface)                                         │
 │    - BlockStoredEvent / BlockRemovedEvent / AllBlocksClearedEvent   │

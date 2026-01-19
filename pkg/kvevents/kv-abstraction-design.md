@@ -532,7 +532,7 @@ From subsrciber side:
         │     Transport Layer   │   │     Decoder Layer     │
         │ - ZMQ / HTTP          │   │ - msgpack / JSON      │
         │ - Connect/Bind        │   │ - Unmarshal bytes     │
-        │ - Receive bytes       │   │   To structs          │
+        │ - Receive bytes       │   │                       │
         └───────────────────────┘   └───────────────────────┘
                               ↓ EngineAdapter returns GenericEventBatch
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -592,4 +592,4 @@ pkg/kvevents/
 - Look what is the specific structure of the SGLang events and summerize here. (overall, looks similar, just the actual Event objects have differend fields)
 - Go over the flow of creating the subsribers.
 - Bind/Connect remains subscriber's responsibility. Trsnaport will just need to implement both options.
-```
+

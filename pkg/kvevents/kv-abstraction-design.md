@@ -511,14 +511,12 @@ From subsrciber side:
 ┌─────────────────────────────────────────────────────────────────────┐
 │    SubscriberManager                                                │
 │    - Creates and manages multiple Subscribers                       │
-│    - One subscriber per pod                                         │
 │    - Passes Pool reference to each Subscriber                       │
 └─────────────────────────────────────────────────────────────────────┘
                               ↓ creates
 ┌─────────────────────────────────────────────────────────────────────┐
 │    Subscriber                                                       │
 │    - Holds EngineAdapter                                            │
-│    - Manages connection lifecycle (start/stop)                      │
 │    - Sends processed events to Pool                                 │
 └─────────────────────────────────────────────────────────────────────┘
                               ↓ uses

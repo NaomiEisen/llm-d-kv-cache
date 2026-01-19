@@ -417,10 +417,8 @@ classDiagram
     
     BlockStoredEvent --> Index : updates
     BlockRemovedEvent --> Index : updates
-    AllBlocksClearedEvent --> Index : updates
     
-    BlockStoredEvent --> EngineAdapter : uses ParseHash()
-    BlockRemovedEvent --> EngineAdapter : uses ParseHash()
+    GenericEvent --> EngineAdapter : uses ParseHash()
 ```
 
 ### Data Flow

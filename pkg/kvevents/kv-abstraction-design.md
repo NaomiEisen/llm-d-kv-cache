@@ -268,6 +268,37 @@ graph TB
 
 ***Note: Theoretically this scenario is possible but for now it is better to separate different engines with different pools (so, SubscriberManager). This is just to emphasize the flexibility with this design***
 
+For now, it will look something like this:
+```mermaid
+graph TB
+    SM[SubscriberManager-vllm]
+    SM2[SubscriberManager-sglang]
+    
+    SM --> S1[Subscriber 1<br/>pod: vllm-pod-1]
+    SM2 --> S2[Subscriber 2<br/>pod: sglang-pod-1]
+    
+    S1 --> A1[VLLMAdapter]
+    A1 --> T1[ZMQTransport]
+    A1 --> D1[MsgpackDecoder]
+    
+    S2 --> A2[SGLangAdapter]
+    A2 --> T1[ZMQTransport]
+    A2 --> D1[MsgpackDecoder]
+    
+    SM --> Pool-vllm
+    SM2 --> Pool-sglang
+    S1 --> Pool-vllm
+    S2 --> Pool-sglang
+
+    
+    style SM fill:#b3e0ff,color:#000
+    style SM2 fill:#b3e0ff,color:#000
+    style S1 fill:#ffe4b3,color:#000
+    style S2 fill:#ffe4b3,color:#000
+    style A1 fill:#c8f0c8,color:#000
+    style A2 fill:#c8f0c8,color:#000
+```
+
 ### Object Diagram
 
 A full object diagram of the design.

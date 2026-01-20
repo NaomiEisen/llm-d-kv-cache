@@ -339,6 +339,7 @@ classDiagram
     }
     
     class VLLMAdapter {
+        -message Message %% The format we excpect to recieve
         -transport Transport
         -decoder Decoder
         +ProcessMessage() GenericEventBatch
@@ -393,13 +394,6 @@ classDiagram
         +Stop()
     }
     
-    class Message {
-        +Batch GenericEventBatch
-        +PodIdentifier string
-        +ModelName string
-        +Adapter EngineAdapter
-    }
-    
     class Pool {
         -queues []WorkQueue
         -index Index
@@ -440,11 +434,8 @@ classDiagram
     VLLMAdapter ..> GenericEvent : creates
     
     SGLangAdapter ..> GenericEvent : creates
-
-    Message --> GenericEventBatch : contains
-    Message --> EngineAdapter : references
     
-    Pool --> Message : processes
+    Pool --> GenericEventBatch : processes
     
     BlockStoredEvent --> Index : updates
     BlockRemovedEvent --> Index : updates
@@ -476,17 +467,17 @@ sequenceDiagram
     
     Adapter->>Decoder: Decode(rawBytes)
     activate Decoder
-    Note over Decoder: Unmarshal bytes<br/>to structs
-    Decoder-->>Adapter: Decoded struct
+    Note over Decoder: Unmarshal bytes<br/>to Message
+    Decoder-->>Adapter: Decoded Message
     deactivate Decoder
     
-    Note over Adapter: Parse engine events<br/>Create generic events
+    Note over Adapter: Parse Mesage<br/>Create generic events
     Adapter->>Event: new BlockStoredEvent()
     Adapter-->>Subscriber: GenericEventBatch{Events}
     deactivate Adapter
     
-    Subscriber->>Pool: AddTask(Message{batch, adapter})
-    Note over Subscriber: Pre-processed batch
+    Subscriber->>Pool: AddTask(GenericEventBatch)
+    Note over Subscriber: Processed Batch - array of GenericEvent
     
     activate Pool
     Pool->>Event: event.Process(ctx, index, ...)

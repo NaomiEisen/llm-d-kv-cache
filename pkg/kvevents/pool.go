@@ -30,8 +30,8 @@ import (
 )
 
 const (
-	defaultDeviceTier  = "gpu"
-	defaultPodSelector = "llm-d.ai/inferenceServing=true"
+	defaultEventSourceDeviceTier = "gpu"
+	defaultPodSelector           = "llm-d.ai/inferenceServing=true"
 )
 
 // Config holds the configuration for the event processing pool.
@@ -223,7 +223,7 @@ func (p *Pool) processEventBatch(ctx context.Context, batch *events.EventBatch, 
 		case *events.BlockStoredEvent:
 			// Default to gpu.
 			// For non-gpu events, vLLM KV event has a non-empty DeviceTier field.
-			deviceTier := defaultDeviceTier
+			deviceTier := defaultEventSourceDeviceTier
 			if ev.DeviceTier != "" {
 				deviceTier = strings.ToLower(ev.DeviceTier)
 			}
@@ -250,7 +250,7 @@ func (p *Pool) processEventBatch(ctx context.Context, batch *events.EventBatch, 
 				key, err := p.index.GetRequestKey(ctx, parentEngineKey)
 				if err != nil {
 					debugLogger.Error(err, "Failed to get request key for parent block",
-						"parentEngineKey", parentEngineKey, "podIdentifier", podIdentifier)
+						"parentEngineKey", parentEngineKey, "effectiveModelName", effectiveModelName)
 					continue
 				}
 				parentRequestKey = key
@@ -270,7 +270,7 @@ func (p *Pool) processEventBatch(ctx context.Context, batch *events.EventBatch, 
 		case *events.BlockRemovedEvent:
 			// Default to gpu.
 			// For non-gpu events, vLLM KV event has a non-empty DeviceTier field.
-			deviceTier := defaultDeviceTier
+			deviceTier := defaultEventSourceDeviceTier
 			if ev.DeviceTier != "" {
 				deviceTier = strings.ToLower(ev.DeviceTier)
 			}
@@ -282,9 +282,9 @@ func (p *Pool) processEventBatch(ctx context.Context, batch *events.EventBatch, 
 			for _, hash := range ev.BlockHashes {
 				engineKey := kvblock.BlockHash(hash)
 				if err := p.index.Evict(ctx, engineKey, podEntries); err != nil {
-					debugLogger.Error(err, "Failed to evict block from index",
+					debugLogger.Error(err, "Failed to evict event from index",
 						"podIdentifier", podIdentifier, "event", ev)
-					continue // Continue processing other blocks even if one fails
+					continue // Continue processing other events even if one fails
 				}
 			}
 
@@ -296,7 +296,7 @@ func (p *Pool) processEventBatch(ctx context.Context, batch *events.EventBatch, 
 				"modelName", modelName)
 
 		default:
-			debugLogger.Info("Unknown event type", "podIdentifier", podIdentifier, "eventType", genericEvent.Type())
+			debugLogger.Info("Unknown event", "podIdentifier", podIdentifier, "event", genericEvent)
 		}
 	}
 }

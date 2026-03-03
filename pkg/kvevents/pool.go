@@ -30,8 +30,8 @@ import (
 )
 
 const (
-	defaultEventSourceDeviceTier = "GPU"
-	defaultPodSelector           = "llm-d.ai/inferenceServing=true"
+	defaultDeviceTier  = "gpu"
+	defaultPodSelector = "llm-d.ai/inferenceServing=true"
 )
 
 // Config holds the configuration for the event processing pool.
@@ -221,7 +221,12 @@ func (p *Pool) processEventBatch(ctx context.Context, batch *events.EventBatch, 
 	for _, genericEvent := range batch.Events {
 		switch ev := genericEvent.(type) {
 		case *events.BlockStoredEvent:
-			deviceTier := strings.ToLower(ev.DeviceTier)
+			// Default to gpu.
+			// For non-gpu events, vLLM KV event has a non-empty DeviceTier field.
+			deviceTier := defaultDeviceTier
+			if ev.DeviceTier != "" {
+				deviceTier = strings.ToLower(ev.DeviceTier)
+			}
 
 			// Use LoRA name as model identifier if available, otherwise fall back to base model name.
 			effectiveModelName := modelName
@@ -245,7 +250,7 @@ func (p *Pool) processEventBatch(ctx context.Context, batch *events.EventBatch, 
 				key, err := p.index.GetRequestKey(ctx, parentEngineKey)
 				if err != nil {
 					debugLogger.Error(err, "Failed to get request key for parent block",
-						"parentEngineKey", parentEngineKey, "effectiveModelName", effectiveModelName)
+						"parentEngineKey", parentEngineKey, "podIdentifier", podIdentifier)
 					continue
 				}
 				parentRequestKey = key
@@ -257,13 +262,18 @@ func (p *Pool) processEventBatch(ctx context.Context, batch *events.EventBatch, 
 			if len(engineKeys) > 0 {
 				if err := p.index.Add(ctx, engineKeys, requestKeys, podEntries); err != nil {
 					debugLogger.Error(err, "Failed to add event to index",
-						"podIdentifier", podIdentifier, "modelName", modelName)
+						"podIdentifier", podIdentifier, "event", ev)
 					continue // Continue processing other events even if one fails
 				}
 			}
 
 		case *events.BlockRemovedEvent:
-			deviceTier := strings.ToLower(ev.DeviceTier)
+			// Default to gpu.
+			// For non-gpu events, vLLM KV event has a non-empty DeviceTier field.
+			deviceTier := defaultDeviceTier
+			if ev.DeviceTier != "" {
+				deviceTier = strings.ToLower(ev.DeviceTier)
+			}
 
 			// Create PodEntry for this specific event's device tier
 			podEntries := []kvblock.PodEntry{{PodIdentifier: podIdentifier, DeviceTier: deviceTier}}
@@ -272,8 +282,8 @@ func (p *Pool) processEventBatch(ctx context.Context, batch *events.EventBatch, 
 			for _, hash := range ev.BlockHashes {
 				engineKey := kvblock.BlockHash(hash)
 				if err := p.index.Evict(ctx, engineKey, podEntries); err != nil {
-					debugLogger.Error(err, "Failed to remove event from index",
-						"engineKey", engineKey, "podIdentifier", podIdentifier)
+					debugLogger.Error(err, "Failed to evict block from index",
+						"podIdentifier", podIdentifier, "event", ev)
 					continue // Continue processing other blocks even if one fails
 				}
 			}
